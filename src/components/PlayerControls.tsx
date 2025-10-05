@@ -1,5 +1,6 @@
-import React from 'react';
-import { useMusicPlayer } from './MusicPlayerContext';
+import React, { useState } from 'react';
+import { useSong } from './SongContext';
+import { usePlayer } from './PlayerContext';
 import { Button } from './ui/button';
 import { 
   Play, 
@@ -15,9 +16,7 @@ import { Slider } from './ui/slider';
 export function PlayerControls() {
   const { 
     isPlaying, 
-    currentTime, 
     currentSong,
-    isPreviewMode,
     isLooping,
     isShuffling,
     volume,
@@ -29,19 +28,23 @@ export function PlayerControls() {
     previousSong,
     toggleLoop,
     toggleShuffle,
-    setVolume,
-    seekTo,
-    stopSnippet
-  } = useMusicPlayer();
+    setVolume
+  } = useSong();
+
+  const { currentTime, duration, seekTo } = usePlayer();
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragValue, setDragValue] = useState(0);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const roundedSeconds = Math.round(seconds);
+    const mins = Math.floor(roundedSeconds / 60);
+    const secs = roundedSeconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const duration = currentSong?.duration || 0;
-  const maxTime = isPreviewMode ? 30 : duration; // 30 seconds for preview
+  const songDuration = currentSong?.duration || 0;
+  const maxTime = duration || songDuration;
   const progress = maxTime > 0 ? (currentTime / maxTime) * 100 : 0;
 
   return (
@@ -56,28 +59,24 @@ export function PlayerControls() {
         </p>
         <p className="text-sm text-muted-foreground/80 truncate">
           {currentSong?.album || 'Unknown Album'}
-          {isPreviewMode && ' • Preview'}
         </p>
-        {isPreviewMode && (
-          <p className="text-xs text-muted-foreground">
-            🎵 30-second preview • Click to play full song
-          </p>
-        )}
       </div>
       {/* Progress Bar */}
       <div style={{marginTop: 20}}>
         <div className="relative">
           <Slider
-            value={[progress]}
+            value={[isDragging ? dragValue : progress]}
             max={100}
             step={0.1}
             onValueChange={(value: number[]) => {
-              if (!isPreviewMode) {
-                const newTime = Math.floor((value[0] / 100) * duration);
-                seekTo(newTime);
-              }
+              setIsDragging(true);
+              setDragValue(value[0]);
             }}
-            disabled={isPreviewMode}
+            onValueCommit={(value: number[]) => {
+              const newTime = Math.floor((value[0] / 100) * maxTime);
+              seekTo(newTime);
+              setIsDragging(false);
+            }}
             className="w-full"
             style={{
               '--slider-track': accentColor,
@@ -88,7 +87,7 @@ export function PlayerControls() {
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{formatTime(currentTime)}</span>
-          <span>{isPreviewMode ? '0:30' : formatTime(duration)}</span>
+          <span>{formatTime(maxTime)}</span>
         </div>
       </div>
 

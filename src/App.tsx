@@ -1,10 +1,13 @@
-import { MusicPlayerProvider } from './components/MusicPlayerContext';
+import { SongProvider } from './components/SongContext';
+import { PlayerProvider } from './components/PlayerContext';
 import { Homepage } from './pages/homepage/Homepage';
 
 export default function App() {
   return (
-    <MusicPlayerProvider>
-      <Homepage />
-    </MusicPlayerProvider>
+    <SongProvider>
+      <PlayerProvider>
+        <Homepage />
+      </PlayerProvider>
+    </SongProvider>
   );
 }

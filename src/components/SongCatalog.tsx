@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useMusicPlayer } from './MusicPlayerContext';
+import { useState, useMemo, useCallback, memo } from 'react';
+import { useSong } from './SongContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
@@ -10,7 +10,6 @@ import {
   Plus, 
   MoreHorizontal, 
   Music, 
-  Volume2,
   SkipForward,
   ChevronRight,
   ChevronDown
@@ -28,15 +27,12 @@ export function SongCatalog() {
     playlist, 
     currentSong, 
     isPlaying,
-    isPreviewMode,
     dominantColor, 
     accentColor,
     selectSong,
-    playSnippet,
-    stopSnippet,
     addToQueue,
     playNext
-  } = useMusicPlayer();
+  } = useSong();
 
   // const [hoveredSong, setHoveredSong] = useState<string | null>(null);
   // Start with first few albums expanded to show the hierarchy
@@ -58,43 +54,108 @@ export function SongCatalog() {
   };
 
   // Group songs by album
-  const albumGroups = playlist.reduce((groups, song) => {
-    const album = song.album;
-    if (!groups[album]) {
-      groups[album] = [];
-    }
-    groups[album].push(song);
-    return groups;
-  }, {} as Record<string, typeof playlist>);
+  const albumGroups = useMemo(() => {
+    return playlist.reduce((groups, song) => {
+      const album = song.album;
+      if (!groups[album]) {
+        groups[album] = [];
+      }
+      groups[album].push(song);
+      return groups;
+    }, {} as Record<string, typeof playlist>);
+  }, [playlist]);
 
-  const toggleAlbum = (album: string) => {
-    const newExpanded = new Set(expandedAlbums);
-    if (newExpanded.has(album)) {
-      newExpanded.delete(album);
-    } else {
-      newExpanded.add(album);
-    }
-    setExpandedAlbums(newExpanded);
-  };
+  const toggleAlbum = useCallback((album: string) => {
+    setExpandedAlbums(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(album)) {
+        newExpanded.delete(album);
+      } else {
+        newExpanded.add(album);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const handlePreview = (song: any) => {
-    if (isPreviewMode && currentSong?.id === song.id && isPlaying) {
-      stopSnippet();
-    } else {
-      playSnippet(song);
-    }
-  };
+  const isCurrentlyPlaying = useCallback((song: any) => {
+    return currentSong?.id === song.id;
+  }, [currentSong?.id]);
 
-  const isCurrentlyPreviewing = (song: any) => {
-    return isPreviewMode && currentSong?.id === song.id && isPlaying;
-  };
+  // Memoized song item component to prevent unnecessary re-renders
+  const SongItem = memo(({ song, isCurrent }: { 
+    song: any, 
+    isCurrent: boolean
+  }) => (
+    <div
+      className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors group relative ${
+        isCurrent ? 'bg-muted/50' : ''
+      }`}
+      style={{
+        backgroundColor: isCurrent ? `${accentColor}10` : undefined,
+        borderLeft: isCurrent ? `2px solid ${dominantColor}` : '2px solid transparent'
+      }}
+      onClick={() => selectSong(song)}
+    >
+      {/* Song Info */}
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm truncate">{song.title}</h4>
+        <p className="text-xs text-muted-foreground">
+          {formatDuration(song.duration)}
+          {song.year && ` • ${song.year}`}
+        </p>
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="flex items-center space-x-1 flex-shrink-0">
+        {/* More Options */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              onClick={() => playNext(song)}
+              className="text-xs"
+            >
+              <SkipForward className="w-3 h-3 mr-2" />
+              Play Next
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => addToQueue(song)}
+              className="text-xs"
+            >
+              <Plus className="w-3 h-3 mr-2" />
+              Add to Queue
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-  const isCurrentlyPlaying = (song: any) => {
-    return !isPreviewMode && currentSong?.id === song.id;
-  };
+        {/* Current Song Indicator */}
+        {isCurrent && (
+          <div 
+            className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: dominantColor }}
+          >
+            {isPlaying ? (
+              <Pause className="w-2.5 h-2.5 text-white" />
+            ) : (
+              <Play className="w-2.5 h-2.5 text-white" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  ));
 
   // Content component that can be reused in both sidebar and sheet
-  const SongCatalogContent = () => (
+  const SongCatalogContent = memo(() => (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border">
@@ -158,109 +219,13 @@ export function SongCatalog() {
                   <div className="ml-4 space-y-1">
                     {songs.map((song) => {
                       const isCurrent = isCurrentlyPlaying(song);
-                      const isPreviewing = isCurrentlyPreviewing(song);
                       
                       return (
-                        <div
+                        <SongItem
                           key={song.id}
-                          className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors group relative ${
-                            isCurrent ? 'bg-muted/50' : ''
-                          }`}
-                          style={{
-                            backgroundColor: isCurrent ? `${accentColor}10` : undefined,
-                            borderLeft: isCurrent ? `2px solid ${dominantColor}` : '2px solid transparent'
-                          }}
-                          // onMouseEnter={() => setHoveredSong(song.id)}
-                          // onMouseLeave={() => setHoveredSong(null)}
-                          onClick={() => selectSong(song)}
-                        >
-                          {/* Song Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm truncate">{song.title}</h4>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDuration(song.duration)}
-                              {song.year && ` • ${song.year}`}
-                            </p>
-                          </div>
-                          
-                          {/* Action Buttons */}
-                          <div className="flex items-center space-x-1 flex-shrink-0">
-                            {/* Preview Button */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePreview(song);
-                              }}
-                              style={{ color: dominantColor }}
-                            >
-                              {isPreviewing ? (
-                                <Pause className="w-3 h-3" />
-                              ) : (
-                                <Volume2 className="w-3 h-3" />
-                              )}
-                            </Button>
-
-                            {/* More Options */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <MoreHorizontal className="w-3 h-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem 
-                                  onClick={() => playNext(song)}
-                                  className="text-xs"
-                                >
-                                  <SkipForward className="w-3 h-3 mr-2" />
-                                  Play Next
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => addToQueue(song)}
-                                  className="text-xs"
-                                >
-                                  <Plus className="w-3 h-3 mr-2" />
-                                  Add to Queue
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            {/* Current Song Indicator */}
-                            {isCurrent && (
-                              <div 
-                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: dominantColor }}
-                              >
-                                {isPlaying ? (
-                                  <Pause className="w-2.5 h-2.5 text-white" />
-                                ) : (
-                                  <Play className="w-2.5 h-2.5 text-white" />
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Preview Progress Bar */}
-                          {isPreviewing && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted rounded-full overflow-hidden">
-                              <div 
-                                className="h-full transition-all duration-1000 rounded-full"
-                                style={{ 
-                                  backgroundColor: dominantColor,
-                                  width: '30%' // Simulated preview progress
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                          song={song}
+                          isCurrent={isCurrent}
+                        />
                       );
                     })}
                   </div>
@@ -281,7 +246,7 @@ export function SongCatalog() {
         </div>
       </div>
     </div>
-  );
+  ));
 
   return (
     <>

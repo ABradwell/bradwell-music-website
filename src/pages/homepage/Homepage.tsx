@@ -1,4 +1,4 @@
-import { useMusicPlayer } from '../../components/MusicPlayerContext';
+import { useSong } from '../../components/SongContext';
 import { Gramophone } from '../../components/Gramophone';
 import { PlayerControls } from '../../components/PlayerControls';
 import { SettingsPanel } from '../../components/SettingsPanel';
@@ -6,7 +6,7 @@ import { SongCatalog } from '../../components/SongCatalog';
 import { Spacer } from '../../components/spacer';
 
 export function Homepage() {
-  const { dominantColor, accentColor, currentSong, isPreviewMode } = useMusicPlayer();
+  const { dominantColor, accentColor, currentSong } = useSong();
 
   return (
     <div className="min-h-screen bg-background transition-all duration-1000 relative overflow-hidden flex">
@@ -49,19 +49,6 @@ export function Homepage() {
           <SettingsPanel />
         </div>
 
-        {/* Preview Mode Indicator */}
-        {isPreviewMode && (
-          <div 
-            className="absolute top-4 left-4 lg:left-4 z-10 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
-            style={{
-              backgroundColor: `${dominantColor}20`,
-              color: dominantColor,
-              border: `1px solid ${dominantColor}30`
-            }}
-          >
-            🎵 Playing Preview
-          </div>
-        )}
 
         {/* Gramophone Section with enhanced ambient lighting */}
         <div className="relative flex-shrink-0">

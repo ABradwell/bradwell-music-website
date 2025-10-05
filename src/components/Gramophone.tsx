@@ -1,8 +1,9 @@
-import { useMusicPlayer } from './MusicPlayerContext';
+// import { useMusicPlayer } from './MusicPlayerContext';
+import { useSong } from './SongContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function Gramophone() {
-  const { currentSong, isPlaying, dominantColor, accentColor } = useMusicPlayer();
+  const { currentSong, isPlaying, dominantColor, accentColor } = useSong();
 
   return (
     <div className="relative flex items-center justify-center">

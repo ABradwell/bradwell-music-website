@@ -1,5 +1,5 @@
 
-import { useMusicPlayer } from './MusicPlayerContext';
+import { useSong } from './SongContext';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
@@ -19,7 +19,7 @@ export function SettingsPanel() {
     toggleLoop, 
     toggleShuffle,
     setVolume
-  } = useMusicPlayer();
+  } = useSong();
 
   return (
     <Sheet>

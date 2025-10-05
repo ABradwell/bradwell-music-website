@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Song, personalSongs } from '../utils/songData';
+import { TimeProvider, useTime } from './TimeContext';
 
 interface MusicPlayerState {
   currentSong: Song | null;
@@ -7,8 +8,6 @@ interface MusicPlayerState {
   queue: Song[];
   isPlaying: boolean;
   isPreviewMode: boolean;
-  currentTime: number;
-  duration: number;
   volume: number;
   isLooping: boolean;
   isShuffling: boolean;
@@ -34,219 +33,222 @@ interface MusicPlayerContextType extends MusicPlayerState {
   toggleShuffle: () => void;
   toggleDarkMode: () => void;
   setVolume: (volume: number) => void;
-  seekTo: (time: number) => void;
   extractColors: (imageUrl: string) => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
 
-export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<MusicPlayerState>({
-    currentSong: personalSongs[0],
-    playlist: personalSongs,
-    queue: [],
-    isPlaying: false,
-    isPreviewMode: false,
-    currentTime: 0,
-    duration: 0,
-    volume: 0.7,
-    isLooping: false,
-    isShuffling: false,
-    darkMode: true,
-    dominantColor: personalSongs[0].primaryColor || '#6750A4',
-    accentColor: personalSongs[0].secondaryColor || '#E8DEF8'
-  });
+function MusicPlayerProviderInner({ children }: { children: React.ReactNode }) {
+
+
+  const [currentSong, setCurrentSong] = useState<Song>(personalSongs[0]);
+  const [playlist, setPlaylist] = useState<Song[]>(personalSongs);
+  const [queue, setQueue] = useState<Song[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [volume, setVol] = useState(0.7);
+  const [isLooping, setIsLooping] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const [dominantColor, setDominantColor] = useState(personalSongs[0].primaryColor || '#6750A4');
+  const [accentColor, setAccentColor] = useState(personalSongs[0].secondaryColor || '#E8DEF8');
+  const [currentTime, setCurrentTime] = useState(0);
+  // const [duration, setDuration] = useState(0);
 
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const { setAudioRef } = useTime();
 
+  // Register audio element with TimeProvider
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (state.isPlaying && state.currentSong) {
-        setState(prev => ({
-          ...prev,
-          currentTime: Math.min(prev.currentTime + 1, state.currentSong?.duration || 0)
-        }));
-        
-        if (state.currentTime >= (state.currentSong?.duration || 0)) {
-          if (state.isLooping) {
-            setState(prev => ({ ...prev, currentTime: 0 }));
-          } else {
-            nextSong();
-          }
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [state.isPlaying, state.currentTime, state.currentSong?.duration, state.isLooping]);
-
-  const extractColors = (_imageUrl: string) => {
-    // In a real app, this would use a color extraction library
-    // For now, we'll use the predefined colors from the song data
-    const song = state.currentSong;
-    if (song?.primaryColor && song?.secondaryColor) {
-      setState(prev => ({
-        ...prev,
-        dominantColor: song.primaryColor!,
-        accentColor: song.secondaryColor!
-      }));
+    if (audioRef.current) {
+      setAudioRef(audioRef.current);
     }
-  };
+  }, [setAudioRef]);
 
-  const play = () => {
-    setState(prev => ({ ...prev, isPlaying: true }));
-  };
-
-  const pause = () => {
-    setState(prev => ({ ...prev, isPlaying: false }));
-  };
-
-  const togglePlay = () => {
-    setState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
-  };
-
+  // Define functions first
   const nextSong = () => {
     // First check if there's a queue
-    if (state.queue.length > 0) {
-      const nextSong = state.queue[0];
-      setState(prev => ({
-        ...prev,
-        currentSong: nextSong,
-        queue: prev.queue.slice(1),
-        currentTime: 0,
-        isPreviewMode: false,
-        dominantColor: nextSong.primaryColor || '#6750A4',
-        accentColor: nextSong.secondaryColor || '#E8DEF8'
-      }));
+    if (queue.length > 0) {
+      const nextSong = queue[0];
+
+
+      setCurrentSong(nextSong);
+      setQueue(queue.slice(1));
+      setCurrentTime(0);
+      setIsPreviewMode(false);
+      setDominantColor(nextSong.primaryColor || '#6750A4');
+      setAccentColor(nextSong.secondaryColor || '#E8DEF8');
       return;
     }
 
     // Otherwise continue with normal playlist logic
     let nextIndex;
-    if (state.isShuffling) {
-      nextIndex = Math.floor(Math.random() * state.playlist.length);
+    if (isShuffling) {
+      nextIndex = Math.floor(Math.random() * playlist.length);
     } else {
-      nextIndex = (currentSongIndex + 1) % state.playlist.length;
+      nextIndex = (currentSongIndex + 1) % playlist.length;
     }
     
     setCurrentSongIndex(nextIndex);
-    const nextSong = state.playlist[nextIndex];
-    setState(prev => ({
-      ...prev,
-      currentSong: nextSong,
-      currentTime: 0,
-      isPreviewMode: false,
-      dominantColor: nextSong.primaryColor || '#6750A4',
-      accentColor: nextSong.secondaryColor || '#E8DEF8'
-    }));
+    const nextSong = playlist[nextIndex];
+    setCurrentSong(nextSong);
+    setCurrentTime(0);
+    setIsPreviewMode(false);
+    setDominantColor(nextSong.primaryColor || '#6750A4');
+    setAccentColor(nextSong.secondaryColor || '#E8DEF8');
+  };
+
+  // Handle audio element events - only non-time related events
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleEnded = () => {
+      if (isLooping) {
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        nextSong();
+      }
+    };
+
+    const handleError = () => {
+      console.error('Audio playback error');
+      // setState(prev => ({ ...prev, isPlaying: false }));
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [isLooping]);
+
+  // Control audio playback based on state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+
+    audio.src = currentSong.audioUrl;
+    audio.volume = volume;
+    audio.loop = isLooping;
+
+    if (isPlaying) {
+      audio.play().catch(console.error);
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentSong, volume, isLooping]);
+
+  const extractColors = (_imageUrl: string) => {
+    // In a real app, this would use a color extraction library
+    // For now, we'll use the predefined colors from the song data
+    const song = currentSong;
+    if (song?.primaryColor && song?.secondaryColor) {
+
+      setDominantColor(song.primaryColor!);
+      setAccentColor(song.secondaryColor!);
+
+    }
+  };
+
+  const play = () => {
+    setIsPlaying(true);
+  };
+
+  const pause = () => {
+    setIsPlaying(false);
+  };
+
+  const togglePlay = () => {
+    setIsPlaying(prev => !prev);
   };
 
   const previousSong = () => {
-    const prevIndex = currentSongIndex === 0 ? state.playlist.length - 1 : currentSongIndex - 1;
+    const prevIndex = currentSongIndex === 0 ? playlist.length - 1 : currentSongIndex - 1;
     setCurrentSongIndex(prevIndex);
-    const prevSong = state.playlist[prevIndex];
-    setState(prev => ({
-      ...prev,
-      currentSong: prevSong,
-      currentTime: 0,
-      dominantColor: prevSong.primaryColor || '#6750A4',
-      accentColor: prevSong.secondaryColor || '#E8DEF8'
-    }));
+    const prevSong = playlist[prevIndex];
+  
+    setCurrentSong(prevSong);
+    setCurrentTime(0);
+    setDominantColor(prevSong.primaryColor || '#6750A4');
+    setAccentColor(prevSong.secondaryColor || '#E8DEF8');
   };
 
   const selectSong = (song: Song) => {
-    const index = state.playlist.findIndex(s => s.id === song.id);
+    const index = playlist.findIndex(s => s.id === song.id);
     setCurrentSongIndex(index);
-    setState(prev => ({
-      ...prev,
-      currentSong: song,
-      currentTime: 0,
-      isPlaying: true,
-      isPreviewMode: false,
-      dominantColor: song.primaryColor || '#6750A4',
-      accentColor: song.secondaryColor || '#E8DEF8'
-    }));
+
+    setCurrentSong(song);
+    setCurrentTime(0);
+    setIsPlaying(true);
+    setIsPreviewMode(false);
+    setDominantColor(song.primaryColor || '#6750A4');
+    setAccentColor(song.secondaryColor || '#E8DEF8');
   };
 
   const playSnippet = (song: Song) => {
-    setState(prev => ({
-      ...prev,
-      currentSong: song,
-      currentTime: 0,
-      isPlaying: true,
-      isPreviewMode: true,
-      dominantColor: song.primaryColor || '#6750A4',
-      accentColor: song.secondaryColor || '#E8DEF8'
-    }));
+
+    setCurrentSong(song);
+    setCurrentTime(0);
+    setIsPlaying(true);
+    setIsPreviewMode(true);
+    setDominantColor(song.primaryColor || '#6750A4');
+    setAccentColor(song.secondaryColor || '#E8DEF8');
   };
 
   const stopSnippet = () => {
-    setState(prev => ({
-      ...prev,
-      isPlaying: false,
-      isPreviewMode: false
-    }));
+    setIsPlaying(false);
+    setIsPreviewMode(false);
   };
 
   const addToQueue = (song: Song) => {
-    setState(prev => ({
-      ...prev,
-      queue: [...prev.queue, song]
-    }));
+    setQueue([...queue, song]);
   };
 
   const removeFromQueue = (songId: string) => {
-    setState(prev => ({
-      ...prev,
-      queue: prev.queue.filter(song => song.id !== songId)
-    }));
+    setQueue(queue.filter(song => song.id !== songId));
   };
 
   const clearQueue = () => {
-    setState(prev => ({
-      ...prev,
-      queue: []
-    }));
+    setQueue([]);
   };
 
   const playNext = (song: Song) => {
-    setState(prev => ({
-      ...prev,
-      queue: [song, ...prev.queue]
-    }));
+    setQueue([song, ...queue]);
   };
 
   const toggleLoop = () => {
-    setState(prev => ({ ...prev, isLooping: !prev.isLooping }));
+    setIsLooping(prev => !prev);
   };
 
   const toggleShuffle = () => {
-    setState(prev => ({ ...prev, isShuffling: !prev.isShuffling }));
+    setIsShuffling(prev => !prev);
   };
 
   const toggleDarkMode = () => {
-    setState(prev => ({ ...prev, darkMode: !prev.darkMode }));
+    setDarkMode(prev => !prev);
   };
 
   const setVolume = (volume: number) => {
-    setState(prev => ({ ...prev, volume }));
+    setVolume(volume);
   };
 
-  const seekTo = (time: number) => {
-    setState(prev => ({ ...prev, currentTime: time }));
-  };
 
   useEffect(() => {
-    if (state.darkMode) {
+    if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [state.darkMode]);
+  }, [darkMode]);
 
   const contextValue: MusicPlayerContextType = {
-    ...state,
     play,
     pause,
     togglePlay,
@@ -263,14 +265,39 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     toggleShuffle,
     toggleDarkMode,
     setVolume,
-    seekTo,
-    extractColors
+    extractColors,
+    currentSong,
+    playlist,
+    queue,
+    isPlaying,
+    isPreviewMode,
+    volume,
+    isLooping,
+    isShuffling,
+    darkMode,
+    dominantColor,
+    accentColor
   };
 
   return (
     <MusicPlayerContext.Provider value={contextValue}>
       {children}
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        style={{ display: 'none' }}
+      />
     </MusicPlayerContext.Provider>
+  );
+}
+
+export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <TimeProvider>
+      <MusicPlayerProviderInner>
+        {children}
+      </MusicPlayerProviderInner>
+    </TimeProvider>
   );
 }
 
