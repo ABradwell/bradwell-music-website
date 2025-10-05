@@ -262,7 +262,7 @@ export function SongCatalog() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="fixed top-4 left-4 z-50 w-10 h-10 p-0 rounded-full backdrop-blur-sm"
+              className="fixed top-4 left-4 z-50 w-10 h-10 p-0 rounded-full backdrop-blur-sm lg:hidden"
               style={{
                 backgroundColor: `${accentColor}40`,
                 color: dominantColor

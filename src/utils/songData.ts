@@ -33,7 +33,7 @@ export const personalSongs: Song[] = [
     artist: 'Bradwell',
     album: "I've left my friends",
     duration: 198,
-    coverUrl: '/covers/musicHeadshot.jpg',
+    coverUrl: '/covers/test.jpg',
     audioUrl: '/music/BlackDog.wav',
     snippetUrl: '/music/BlackDog.wav',
     primaryColor: '#1976D2',

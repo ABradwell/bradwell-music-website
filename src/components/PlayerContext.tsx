@@ -61,12 +61,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isLooping, nextSong]);
 
-  // Control audio playback based on state
+  // Set audio source only when song changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
 
     audio.src = currentSong.audioUrl;
+  }, [currentSong]);
+
+  // Control audio playback based on state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
     audio.volume = volume;
     audio.loop = isLooping;
 
@@ -75,7 +82,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     } else {
       audio.pause();
     }
-  }, [isPlaying, currentSong, volume, isLooping]);
+  }, [isPlaying, volume, isLooping]);
 
   const contextValue: PlayerContextType = {
     currentTime,
