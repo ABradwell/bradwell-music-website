@@ -45,9 +45,9 @@ export function PlayerControls() {
   const progress = maxTime > 0 ? (currentTime / maxTime) * 100 : 0;
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <div className="w-full max-w-md mx-auto space-y-3">
       {/* Song Info */}
-      <div className="text-center space-y-1">
+      <div className="text-center">
         <h2 className="text-xl font-medium text-foreground truncate">
           {currentSong?.title || 'No song selected'}
         </h2>
@@ -64,9 +64,8 @@ export function PlayerControls() {
           </p>
         )}
       </div>
-
       {/* Progress Bar */}
-      <div className="space-y-2">
+      <div style={{marginTop: 20}}>
         <div className="relative">
           <Slider
             value={[progress]}
@@ -155,9 +154,8 @@ export function PlayerControls() {
           <Repeat className="w-4 h-4" />
         </Button>
       </div>
-
       {/* Volume Control */}
-      <div className="flex items-center space-x-3 px-4">
+      <div className="flex items-center space-x-3 px-4" style={{marginTop: 20}}>
         <Volume2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         <Slider
           value={[volume * 100]}
