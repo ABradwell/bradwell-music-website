@@ -1,16 +1,12 @@
-import { useState } from 'react';
 import { useMusicPlayer } from '../../components/MusicPlayerContext';
 import { Gramophone } from '../../components/Gramophone';
 import { PlayerControls } from '../../components/PlayerControls';
 import { SettingsPanel } from '../../components/SettingsPanel';
 import { SongCatalog } from '../../components/SongCatalog';
-import { Button } from '../../components/ui/button';
-import { Music } from 'lucide-react';
 import { Spacer } from '../../components/spacer';
 
 export function Homepage() {
   const { dominantColor, accentColor, currentSong, isPreviewMode } = useMusicPlayer();
-  const [showSongCatalog, setShowSongCatalog] = useState(false);
 
   return (
     <div className="min-h-screen bg-background transition-all duration-1000 relative overflow-hidden flex">
@@ -43,49 +39,8 @@ export function Homepage() {
         }}
       />
 
-      {/* Song Catalog Sidebar - Hidden on mobile, with toggle button */}
-      <div className="hidden lg:block">
-        <SongCatalog />
-      </div>
-
-      {/* Mobile Song Catalog Toggle Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-20">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowSongCatalog(!showSongCatalog)}
-          className="backdrop-blur-sm"
-          style={{
-            backgroundColor: `${dominantColor}10`,
-            borderColor: `${dominantColor}30`,
-            color: dominantColor
-          }}
-        >
-          <Music className="w-4 h-4 mr-2" />
-          Songs
-        </Button>
-      </div>
-
-      {/* Mobile Song Catalog Overlay */}
-      {showSongCatalog && (
-        <div className="lg:hidden fixed inset-0 z-30 bg-background/95 backdrop-blur-sm">
-          <div className="h-full">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h2 className="font-medium">Songs</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSongCatalog(false)}
-              >
-                ✕
-              </Button>
-            </div>
-            <div className="h-[calc(100vh-80px)]">
-              <SongCatalog />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Song Catalog - Desktop sidebar, Mobile overlay */}
+      <SongCatalog />
 
       {/* Main Content Container */}
       <div className="flex-1 relative z-5 flex flex-col items-center justify-center p-6 space-y-8">

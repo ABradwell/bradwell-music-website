@@ -3,6 +3,7 @@ import { useMusicPlayer } from './MusicPlayerContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { 
   Play, 
   Pause, 
@@ -92,16 +93,17 @@ export function SongCatalog() {
     return !isPreviewMode && currentSong?.id === song.id;
   };
 
-  return (
-    <div className="w-80 h-screen bg-background/95 backdrop-blur-sm border-r border-border flex flex-col">
+  // Content component that can be reused in both sidebar and sheet
+  const SongCatalogContent = () => (
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center space-x-2">
           <Music className="w-5 h-5" style={{ color: dominantColor }} />
           <h2 className="font-medium">Songs</h2>
-          <Badge variant="secondary" className="ml-auto">
+          {/* <Badge variant="secondary" className="ml-auto">
             {playlist.length}
-          </Badge>
+          </Badge> */}
         </div>
       </div>
 
@@ -279,5 +281,36 @@ export function SongCatalog() {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <div className="hidden lg:block w-80 h-screen bg-background/95 backdrop-blur-sm border-r border-border">
+        <SongCatalogContent />
+      </div>
+
+      {/* Mobile Sheet Overlay - Hidden on desktop */}
+      <div className="lg:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="fixed top-4 left-4 z-50 w-10 h-10 p-0 rounded-full backdrop-blur-sm"
+              style={{
+                backgroundColor: `${accentColor}40`,
+                color: dominantColor
+              }}
+            >
+              <Music className="w-4 h-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-full sm:max-w-md p-0">
+            <SongCatalogContent />
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
   );
 }
