@@ -13,7 +13,7 @@ export function Homepage() {
   const [showQRCode, setShowQRCode] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background transition-all duration-1000 relative overflow-hidden">
+    <div className="min-h-screen bg-background transition-all duration-1000 relative overflow-hidden" >
       {/* Dynamic background based on album art - Material U style */}
       <div 
         className="fixed inset-0 opacity-5 transition-all duration-1000"
@@ -45,7 +45,8 @@ export function Homepage() {
 
 
       {/* Portfolio Splash Section */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-20">
+      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 py-20"
+      style={{padding: '4rem'}}>
         {/* Top Navigation */}
         <div className="absolute top-4 right-4 z-20">
           <SettingsPanel />
@@ -65,14 +66,15 @@ export function Homepage() {
             <TypedSubtitle />
           </div>
           {/* Description */}
-          <p className="text-lg text-muted-foreground/80 max-w-3xl leading-relaxed">
+          <p className="text-lg text-muted-foreground/80 max-w-3xl leading-relaxed"
+          style={{paddingRight: '6rem'}}>
             Welcome! My name is Bradwell, a Canadian-sourced Manchester-based musician who mainly just makes sad songs. 
             Some of these bad boys are real bummers, just some real self-wallowing drivel. Have a listen!
           </p>
 
           {/* Social Links */}
           <div className="pt-6">
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-4 overflow-x-auto pb-2" style={{overflowX: 'scroll', scrollbarColor: 'white transparent',}}>
 
               {/* YouTube */}
               <a 
