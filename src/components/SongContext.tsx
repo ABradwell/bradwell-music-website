@@ -64,6 +64,8 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
       setQueue(queue.slice(1));
       setDominantColor(nextSong.primaryColor || '#6750A4');
       setAccentColor(nextSong.secondaryColor || '#E8DEF8');
+      // Ensure the song starts playing
+      setIsPlaying(true);
       return;
     }
 
@@ -80,6 +82,8 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
     setCurrentSong(nextSong);
     setDominantColor(nextSong.primaryColor || '#6750A4');
     setAccentColor(nextSong.secondaryColor || '#E8DEF8');
+    // Ensure the song starts playing
+    setIsPlaying(true);
   };
 
   const previousSong = () => {
@@ -89,6 +93,8 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
     setCurrentSong(prevSong);
     setDominantColor(prevSong.primaryColor || '#6750A4');
     setAccentColor(prevSong.secondaryColor || '#E8DEF8');
+    // Ensure the song starts playing
+    setIsPlaying(true);
   };
 
   const selectSong = (song: Song) => {

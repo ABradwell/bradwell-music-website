@@ -14,6 +14,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Use refs to get current values in event handlers
+  const isLoopingRef = useRef(isLooping);
+  const nextSongRef = useRef(nextSong);
+  
+  // Update refs when values change
+  useEffect(() => {
+    isLoopingRef.current = isLooping;
+  }, [isLooping]);
+  
+  useEffect(() => {
+    nextSongRef.current = nextSong;
+  }, [nextSong]);
 
   const seekTo = (time: number) => {
     if (audioRef.current) {
@@ -22,7 +35,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setCurrentTime(time);
   };
 
-  // Handle audio time updates
+  // Initialize all event listeners once
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -36,11 +49,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
 
     const handleEnded = () => {
-      if (isLooping) {
+      if (isLoopingRef.current) {
         audio.currentTime = 0;
         audio.play();
       } else {
-        nextSong();
+        nextSongRef.current();
       }
     };
 
@@ -59,30 +72,64 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [isLooping, nextSong]);
+  }, []); // Empty dependency array - only run once
 
   // Set audio source only when song changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
 
-    audio.src = currentSong.audioUrl;
-  }, [currentSong]);
+    // Set source and handle playback
+    if (audio.src !== currentSong.audioUrl) {
+      audio.src = currentSong.audioUrl;
+      
+      // Wait for the audio to be ready before playing
+      const handleCanPlay = () => {
+        if (isPlaying) {
+          audio.play().catch(console.error);
+        }
+        audio.removeEventListener('canplay', handleCanPlay);
+      };
+      
+      const handleLoadedData = () => {
+        if (isPlaying) {
+          audio.play().catch(console.error);
+        }
+        audio.removeEventListener('loadeddata', handleLoadedData);
+      };
+      
+      audio.addEventListener('canplay', handleCanPlay);
+      audio.addEventListener('loadeddata', handleLoadedData);
+      
+      // Fallback: try to play after a short delay
+      setTimeout(() => {
+        if (isPlaying && audio.readyState >= 2) {
+          audio.play().catch(console.error);
+        }
+      }, 500);
+    }
+  }, [currentSong, isPlaying]);
 
-  // Control audio playback based on state
+  // Set audio properties (volume and loop)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.volume = volume;
     audio.loop = isLooping;
+  }, [volume, isLooping]);
+
+  // Control audio playback
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
     if (isPlaying) {
       audio.play().catch(console.error);
     } else {
       audio.pause();
     }
-  }, [isPlaying, volume, isLooping]);
+  }, [isPlaying]);
 
   const contextValue: PlayerContextType = {
     currentTime,
