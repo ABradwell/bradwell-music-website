@@ -1,30 +1,34 @@
 // import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const qrCodeUrl = "https://linktr.ee/bradwell"
-const qrCode = await QRCode.toDataURL(qrCodeUrl)
-
 export function QRCodeModal({ isOpen, onClose }: QRCodeModalProps) {
-  // const canvasRef = useRef<HTMLCanvasElement>(null);
-  // const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
-  // useEffect(() => {
-  //   if (isOpen && canvasRef.current) {
-  //     QRCode.toDataURL(url, {
-  //       width: 256,
-  //       margin: 2,
-  //       color: {
-  //         dark: '#000000',
-  //         light: '#FFFFFF'
-  //       }
-  //     }).then(setQrDataUrl);
-  //   }
-  // }, [isOpen, url]);
+  useEffect(() => {
+
+    const setQrCodeAsync = async () => {
+      const qrCodeUrl = "https://linktr.ee/bradwell"
+
+      const qrCode = await QRCode.toDataURL(qrCodeUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+      setQrDataUrl(qrCode);
+    }
+    setQrCodeAsync()
+   
+  }, []);
 
 
   if (!isOpen) return null;
@@ -47,7 +51,7 @@ export function QRCodeModal({ isOpen, onClose }: QRCodeModalProps) {
           
           <div className="flex justify-center p-4 bg-white rounded-xl">
             <img 
-                src={qrCode} 
+                src={qrDataUrl} 
                 alt="QR Code for Linktree" 
                 style={{ width: 150, height: 150 }}
               />
