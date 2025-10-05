@@ -117,14 +117,6 @@ export function Gramophone() {
           </div>
         </div>
 
-        {/* Turntable controls */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full pt-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-3 h-3 rounded-full bg-muted-foreground opacity-30"></div>
-            <div className="w-2 h-2 rounded-full bg-muted-foreground opacity-50"></div>
-            <div className="w-3 h-3 rounded-full bg-muted-foreground opacity-30"></div>
-          </div>
-        </div>
       </div>
 
       {/* Ambient lighting effect */}
