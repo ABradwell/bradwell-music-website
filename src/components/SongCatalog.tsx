@@ -239,7 +239,6 @@ export function SongCatalog() {
       {/* Footer Info */}
       <div className="p-4 border-t border-border">
         <div className="text-center text-xs text-muted-foreground">
-          <p>Personal Music Collection</p>
           <p className="mt-1">
             {playlist.length} songs • {Math.floor(playlist.reduce((acc, song) => acc + song.duration, 0) / 60)} min total
           </p>
