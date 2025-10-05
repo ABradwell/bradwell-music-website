@@ -55,7 +55,7 @@ export function Homepage() {
         {/* Hero Content */}
         <div className="text-left max-w-4xl mx-auto space-y-8">
           {/* Main Title */}
-          <h1 className="font-black tracking-tight leading-none" style={{ fontSize: '5rem', fontWeight: 600 }}>
+          <h1 className="font-black tracking-tight leading-none" style={{ fontSize: '4rem', fontWeight: 600 }}>
             <div className="text-foreground">Aiden</div>
             <div className="text-foreground">Stevenson</div>
             <div className="text-foreground">Bradwell</div>
@@ -74,7 +74,7 @@ export function Homepage() {
 
           {/* Social Links */}
           <div className="pt-6">
-            <div className="flex gap-4 overflow-x-auto pb-2" style={{overflowX: 'scroll', scrollbarColor: 'white transparent',}}>
+            <div className="flex gap-4 overflow-x-auto pb-2" style={{overflowX: 'scroll', scrollbarColor: 'transparent transparent', scrollbarWidth: 'none'}}>
 
               {/* YouTube */}
               <a 
