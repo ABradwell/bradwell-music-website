@@ -7,6 +7,8 @@ export interface Song {
   coverUrl: string;
   audioUrl: string;
   snippetUrl?: string; // 30-second preview
+  snippetStart?: number; // Start time in seconds for snippet playback
+  snippetEnd?: number; // End time in seconds for snippet playback
   primaryColor?: string;
   secondaryColor?: string;
   year?: number;
@@ -23,8 +25,8 @@ export const personalSongs: Song[] = [
     coverUrl: '/covers/musicHeadshot.jpg',
     audioUrl: '/music/Lenny.wav',
     snippetUrl: '/music/Lenny.wav',
-    primaryColor: '#6750A4',
-    secondaryColor: '#E8DEF8',
+    primaryColor: '#00BCD4',
+    secondaryColor: '#E0F2F1',
     year: 2025
   },
   {
