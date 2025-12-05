@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom';
 import { useSong } from '../../components/SongContext';
 import { SnippetsView } from '../../components/SnippetsView';
 import { HeroHeader } from '../../components/HeroHeader';
+import { Button } from '../../components/ui/button';
 
 export function GistPage() {
   const { dominantColor, accentColor, currentSong } = useSong();
@@ -35,12 +37,11 @@ export function GistPage() {
           background: `linear-gradient(135deg, ${dominantColor}05 0%, ${accentColor}03 100%)`
         }}
       />
-
       {/* Hero Section */}
       <section className="relative z-20">
         <div style={{padding: '4rem'}}>
           <HeroHeader 
-              description="Perfect for sharing with venues - quick snippets of my music"
+              description=""
               showSocialLinks={true}
             />
         </div>
@@ -64,6 +65,22 @@ export function GistPage() {
           background: `radial-gradient(circle, ${accentColor} 0%, transparent 70%)`
         }}
       />
+
+      {/* Navigation Button - Give me more */}
+      <Link to="/" className="fixed top-4 right-4 z-50">
+        <Button 
+          variant="ghost" 
+          className="px-4 py-2 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-105"
+          style={{
+            backgroundColor: `${accentColor}40`,
+            color: dominantColor
+          }}
+        >
+          <span className="text-sm font-medium">give me more</span>
+        </Button>
+      </Link>
+
     </div>
+    
   );
 }

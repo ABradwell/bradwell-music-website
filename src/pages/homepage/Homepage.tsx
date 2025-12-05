@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useSong } from '../../components/SongContext';
 import { Gramophone } from '../../components/Gramophone';
 import { PlayerControls } from '../../components/PlayerControls';
@@ -72,13 +73,24 @@ export function Homepage() {
       {/* Scroll to Listen Indicator */}
       {showScrollIndicator && (
         <div className="relative z-10 flex flex-col items-center justify-center py-8 px-6" style={{marginTop: 150}}>
-          <button
-            onClick={scrollToRecordPlayer}
-            className="flex flex-col items-center gap-3 px-6 py-4  transition-all duration-300 group cursor-pointer"
-          >
-            <span className="text-foreground font-medium text-sm text-muted-foreground/80 ">Scroll to Listen</span>
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground/80">
+              <a
+                onClick={scrollToRecordPlayer}
+                className="text-foreground font-medium hover:underline transition-all duration-300 cursor-pointer"
+              >
+                Listen now
+              </a>
+              <span className="text-muted-foreground/60">or</span>
+              <Link 
+                to="/gist"
+                className="text-foreground font-medium hover:underline transition-all duration-300 cursor-pointer"
+              >
+                see samples
+              </Link>
+            </div>
             <ChevronDown className="w-5 h-5 text-foreground animate-bounce" />
-          </button>
+          </div>
         </div>
       )}
       </section>

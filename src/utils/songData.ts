@@ -25,8 +25,8 @@ export const personalSongs: Song[] = [
     coverUrl: '/covers/musicHeadshot.jpg',
     audioUrl: '/music/Lenny.wav',
     snippetUrl: '/music/Lenny.wav',
-    primaryColor: '#6750A4',
-    secondaryColor: '#E8DEF8',
+    primaryColor: '#00BCD4',
+    secondaryColor: '#E0F2F1',
     year: 2025
   },
   {
