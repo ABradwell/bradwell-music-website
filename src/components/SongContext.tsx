@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Song, personalSongs } from '../utils/songData';
 
+type ViewMode = 'record' | 'snippets';
+
 interface SongContextType {
   currentSong: Song | null;
   playlist: Song[];
@@ -10,6 +12,7 @@ interface SongContextType {
   isLooping: boolean;
   isShuffling: boolean;
   darkMode: boolean;
+  viewMode: ViewMode;
   dominantColor: string;
   accentColor: string;
   selectSong: (song: Song) => void;
@@ -25,6 +28,7 @@ interface SongContextType {
   toggleLoop: () => void;
   toggleShuffle: () => void;
   toggleDarkMode: () => void;
+  setViewMode: (mode: ViewMode) => void;
   setVolume: (volume: number) => void;
   extractColors: (imageUrl: string) => void;
 }
@@ -40,6 +44,7 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('record');
   const [dominantColor, setDominantColor] = useState(personalSongs[0].primaryColor || '#6750A4');
   const [accentColor, setAccentColor] = useState(personalSongs[0].secondaryColor || '#E8DEF8');
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
@@ -159,6 +164,7 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
     isLooping,
     isShuffling,
     darkMode,
+    viewMode,
     dominantColor,
     accentColor,
     selectSong,
@@ -174,6 +180,7 @@ export function SongProvider({ children }: { children: React.ReactNode }) {
     toggleLoop,
     toggleShuffle,
     toggleDarkMode,
+    setViewMode,
     setVolume,
     extractColors
   };

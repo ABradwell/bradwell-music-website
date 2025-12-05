@@ -7,6 +7,8 @@ export interface Song {
   coverUrl: string;
   audioUrl: string;
   snippetUrl?: string; // 30-second preview
+  snippetStart?: number; // Start time in seconds for snippet playback
+  snippetEnd?: number; // End time in seconds for snippet playback
   primaryColor?: string;
   secondaryColor?: string;
   year?: number;

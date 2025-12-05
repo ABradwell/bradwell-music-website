@@ -3,7 +3,7 @@ import { useSong } from './SongContext';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { Settings, Moon, Sun, Volume2, Repeat, Shuffle } from 'lucide-react';
+import { Settings, Moon, Sun, Volume2, Repeat, Shuffle, Disc, Music } from 'lucide-react';
 import { Label } from './ui/label';
 import { Card, CardContent } from './ui/card';
 
@@ -13,11 +13,13 @@ export function SettingsPanel() {
     isLooping, 
     isShuffling, 
     volume,
+    viewMode,
     dominantColor,
     accentColor,
     toggleDarkMode, 
     toggleLoop, 
     toggleShuffle,
+    setViewMode,
     setVolume
   } = useSong();
 
@@ -64,6 +66,47 @@ export function SettingsPanel() {
                   id="dark-mode"
                   checked={darkMode}
                   onCheckedChange={toggleDarkMode}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* View Mode Settings */}
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <h3 className="font-medium">View Mode</h3>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: viewMode === 'record' ? dominantColor : accentColor }}
+                  >
+                    <Disc className="w-4 h-4" style={{ color: viewMode === 'record' ? 'white' : dominantColor }} />
+                  </div>
+                  <Label htmlFor="view-mode-record" className="text-sm">Record Player</Label>
+                </div>
+                <Switch
+                  id="view-mode-record"
+                  checked={viewMode === 'record'}
+                  onCheckedChange={(checked) => setViewMode(checked ? 'record' : 'snippets')}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: viewMode === 'snippets' ? dominantColor : accentColor }}
+                  >
+                    <Music className="w-4 h-4" style={{ color: viewMode === 'snippets' ? 'white' : dominantColor }} />
+                  </div>
+                  <Label htmlFor="view-mode-snippets" className="text-sm">Snippets</Label>
+                </div>
+                <Switch
+                  id="view-mode-snippets"
+                  checked={viewMode === 'snippets'}
+                  onCheckedChange={(checked) => setViewMode(checked ? 'snippets' : 'record')}
                 />
               </div>
             </CardContent>
